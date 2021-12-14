@@ -2,10 +2,13 @@ from rest_framework import viewsets
 from .serializers import CommentSerializer, ReviewSerializer
 from reviews.models import Titles, Review
 from django.shortcuts import get_object_or_404
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.pagination import PageNumberPagination
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
+    pagination_class = PageNumberPagination
 
     def perform_create(self, serializer):
         titles_id = self.kwargs.get('titles_id')
@@ -20,6 +23,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
+    pagination_class = PageNumberPagination
     # permission_classes = (
     #     permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
 
