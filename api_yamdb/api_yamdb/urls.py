@@ -1,9 +1,7 @@
 from django.contrib import admin
-<<<<<<< HEAD
 
-=======
 from django.urls import include, path
->>>>>>> master
+
 from django.views.generic import TemplateView
 
 urlpatterns = [
