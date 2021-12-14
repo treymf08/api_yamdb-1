@@ -7,7 +7,8 @@ from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMessage
+from django.contrib.sites.shortcuts import get_current_site
 
 
 from users.models import User
@@ -20,6 +21,13 @@ def create_user(request):
     serializer = UserSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
+        subject = 'Your confirmation code'
+        current_site = get_current_site(request).domain
+        user_email = serializer.data['email']
+        confirmation_code = 'code'
+        email = EmailMessage(subject, confirmation_code,
+                             current_site, [user_email])
+        email.send()
 
         return Response(serializer.data, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
