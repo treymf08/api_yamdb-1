@@ -4,7 +4,7 @@ from django.db import models
 class Review(models.Model):
     text = models.TextField()
     pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
-    # score = # как выстовлять оченки?
+    # score = # как выстовлять оценки?
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='reviews')
 
