@@ -1,50 +1,10 @@
-<<<<<<< HEAD
-from rest_framework import viewsets
-from .serializers import CommentSerializer, ReviewSerializer
-from reviews.models import Titles, Review
-from django.shortcuts import get_object_or_404
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.pagination import PageNumberPagination
-
-
-class ReviewViewSet(viewsets.ModelViewSet):
-    serializer_class = ReviewSerializer
-    pagination_class = PageNumberPagination
-
-    def perform_create(self, serializer):
-        titles_id = self.kwargs.get('titles_id')
-        titles = get_object_or_404(Titles, id=titles_id)
-        serializer.save(author=self.request.user, titles=titles)
-
-    def get_queryset(self):
-        titles_id = self.kwargs.get('titles_id')
-        titles = get_object_or_404(Titles, id=titles_id)
-        return titles.comments.all()
-
-
-class CommentViewSet(viewsets.ModelViewSet):
-    serializer_class = CommentSerializer
-    pagination_class = PageNumberPagination
-    # permission_classes = (
-    #     permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
-
-    def perform_create(self, serializer):
-        review_id = self.kwargs.get('review_id')
-        review = get_object_or_404(Review, id=review_id)
-        serializer.save(author=self.request.user, review=review)
-
-    def get_queryset(self):
-        review_id = self.kwargs.get('review_id')
-        review = get_object_or_404(Review, id=review_id)
-        return review.comments.all()
-=======
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.pagination import PageNumberPagination
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.core.mail import send_mail, EmailMessage
@@ -53,7 +13,8 @@ from django.contrib.sites.shortcuts import get_current_site
 
 from users.models import User
 from .permissions import IsAdmin
-from .serializers import UserSerializer, UserFullSerializer
+from .serializers import UserSerializer, UserFullSerializer, CommentSerializer, ReviewSerializer
+from reviews.models import Review
 
 
 @api_view(['POST'])
@@ -112,4 +73,36 @@ def admin_get_user(request, username):
         return Response(status=status.HTTP_204_NO_CONTENT)
     serializer = UserFullSerializer(user)
     return Response(serializer.data)
->>>>>>> master
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    serializer_class = ReviewSerializer
+    pagination_class = PageNumberPagination
+
+    # def perform_create(self, serializer):
+    #     titles_id = self.kwargs.get('titles_id')
+    #     titles = get_object_or_404(Titles, id=titles_id)
+    #     serializer.save(author=self.request.user, titles=titles)
+
+    # def get_queryset(self):
+    #     titles_id = self.kwargs.get('titles_id')
+    #     titles = get_object_or_404(Titles, id=titles_id)
+    #     return titles.comments.all()
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    serializer_class = CommentSerializer
+    pagination_class = PageNumberPagination
+    permission_classes = (AllowAny,)
+    # permission_classes = (
+    #     permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
+
+    def perform_create(self, serializer):
+        review_id = self.kwargs.get('review_id')
+        review = get_object_or_404(Review, id=review_id)
+        serializer.save(author=self.request.user, review=review)
+
+    def get_queryset(self):
+        review_id = self.kwargs.get('review_id')
+        review = get_object_or_404(Review, id=review_id)
+        return review.comments.all()
