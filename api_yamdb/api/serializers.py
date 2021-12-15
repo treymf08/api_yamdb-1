@@ -6,10 +6,7 @@ from users.models import User
 CHANGE_USERNAME = 'Нельзя создать пользователя с username = "me"'
 
 
-class UserSerializer(serializers.ModelSerializer):
-    email = serializers.EmailField(
-        validators=[UniqueValidator(queryset=User.objects.all())])
-
+class CreateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('username', 'email')
@@ -20,8 +17,16 @@ class UserSerializer(serializers.ModelSerializer):
         return value
 
 
-class UserFullSerializer(UserSerializer):
+class UsersSerializer(CreateUserSerializer):
+    email = serializers.EmailField(
+        validators=[UniqueValidator(queryset=User.objects.all())])
+
     class Meta:
         model = User
         fields = ('username', 'email', 'first_name',
                   'last_name', 'bio', 'role')
+
+
+class TokenSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    confirmation_code = serializers.CharField()
