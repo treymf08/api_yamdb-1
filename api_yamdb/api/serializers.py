@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from users.models import User
+from reviews.models import Category, Genre, Title
 
 CHANGE_USERNAME = 'Нельзя создать пользователя с username = "me"'
 
@@ -23,27 +24,26 @@ class UsersSerializer(CreateUserSerializer):
                   'last_name', 'bio', 'role')
 
 
-
 class CategorySerializer(serializers.ModelSerializer):
 
-    #class Meta:
-    #   model = Category
-    #   fields = ('name', 'slug')
-    pass
+    class Meta:
+        model = Category
+        fields = ('name', 'slug')
 
 
 class GenreSerializer(serializers.ModelSerializer):
 
-    #class Meta:
-    #   model = Genre
-    #   fields = ('name', 'slug')
-
-    pass
+    class Meta:
+        model = Genre
+        fields = ('name', 'slug')
 
 
 class TitleSerializer(serializers.ModelSerializer):
 
-    pass
+    class Meta:
+        model = Title
+        fields = ('name', 'year', 'description', 'genre', 'category')
+
 
 class TokenSerializer(serializers.Serializer):
     username = serializers.CharField()

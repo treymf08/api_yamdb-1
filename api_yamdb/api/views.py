@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import serializers, status
-from rest_framework import viewsets
+from rest_framework import viewsets, filters
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
@@ -14,7 +14,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from users.models import User
 from .permissions import IsAdmin
 
-#from .serializers import CategorySerializer, GenreSerializer, TitleSerializer
+from .serializers import CategorySerializer, GenreSerializer, TitleSerializer
+from reviews.models import Category, Genre, Title
 from .serializers import CreateUserSerializer, UsersSerializer, TokenSerializer
 BAD_CONFIRMATION_CODE = 'Это поле некорректно'
 MAIL_SUBJECT = 'Ваш confirmation code'
@@ -103,22 +104,24 @@ def admin_get_user(request, username):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class CategoryViewSet(viewsets.ModelViewSet):
-    #filter_backends = (filters.SearchFilter,)
-    #search_fields = ('name',)
-    #pagination_class = LimitOffsetPagination
-    #serializer_class = CategorySerializer
-    #queryset = Category.objects.all()
-    pass
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
+    pagination_class = PageNumberPagination
+    serializer_class = CategorySerializer
+    queryset = Category.objects.all()
+
 
 class GenreViewSet(viewsets.ModelViewSet):
-    #filter_backends = (filters.SearchFilter,)
-    #search_fields = ('name',)
-    #pagination_class = LimitOffsetPagination
-    #serializer_class = GenreSerializer
-    #queryset = Genre.objects.all()
-    pass
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
+    pagination_class = PageNumberPagination
+    serializer_class = GenreSerializer
+    queryset = Genre.objects.all()
+
 
 class TitleViewSet(viewsets.ModelViewSet):
-    #serializer_class = TitleSerializer
-    #queryset = Title.objects.all()
-    pass
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('category', 'genre', 'name', 'year')
+    pagination_class = PageNumberPagination
+    serializer_class = TitleSerializer
+    queryset = Title.objects.all()
