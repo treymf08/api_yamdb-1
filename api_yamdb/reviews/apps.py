@@ -1,5 +1,6 @@
 from django.apps import AppConfig
 
 
-class ReviewConfig(AppConfig):
+class ReviewsConfig(AppConfig):
+
     name = 'reviews'

@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from rest_framework.validators import UniqueValidator
 
 from users.models import User
 from reviews.models import Review, Comment
@@ -7,10 +6,7 @@ from reviews.models import Review, Comment
 CHANGE_USERNAME = 'Нельзя создать пользователя с username = "me"'
 
 
-class UserSerializer(serializers.ModelSerializer):
-    email = serializers.EmailField(
-        validators=[UniqueValidator(queryset=User.objects.all())])
-
+class CreateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('username', 'email')
@@ -21,11 +17,16 @@ class UserSerializer(serializers.ModelSerializer):
         return value
 
 
-class UserFullSerializer(UserSerializer):
+class UsersSerializer(CreateUserSerializer):
     class Meta:
         model = User
         fields = ('username', 'email', 'first_name',
                   'last_name', 'bio', 'role')
+
+
+class TokenSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    confirmation_code = serializers.CharField()
 
 
 class ReviewSerializer(serializers.ModelSerializer):

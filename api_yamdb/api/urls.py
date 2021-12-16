@@ -9,9 +9,10 @@ from .views import (create_user, myself, admin_get_user,
 router = routers.DefaultRouter()
 router.register('users', UserViewSet)
 router.register(
-    r'titles/(?P<post_id>\d+)/comments/', CommentViewSet, basename='comments'
+    r'titles/(?P<title_id>\d+)/reviews/(?P<review_id>\d+)/comments/',
+    CommentViewSet, basename='comments'
 )
-# http://127.0.0.1:8000/api/v1/titles/{title_id}/reviews/
+# titles/{title_id}/reviews/{review_id}/comments/{comment_id}/
 
 
 urlpatterns = [
