@@ -307,7 +307,7 @@ class Test05ReviewAPI:
         assert response.status_code == 403, (
             f'Проверьте, что при PATCH запросе `/api/v1/titles/{{title_id}}/reviews/{{review_id}}/` '
             f'с токеном авторизации {user_name} возвращается статус 403'
-        )d
+        )
         response = client_user.delete(f'/api/v1/titles/{titles[0]["id"]}/reviews/{reviews[0]["id"]}/')
         assert response.status_code == 403, (
             f'Проверьте, что при DELETE запросе `/api/v1/titles/{{title_id}}/reviews/{{review_id}}/` '

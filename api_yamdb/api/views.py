@@ -15,10 +15,13 @@ from users.models import User
 from .permissions import IsAdmin
 
 from .serializers import CategorySerializer, GenreSerializer, TitleSerializer
-from reviews.models import Category, Genre, Title
-from .serializers import CreateUserSerializer, UsersSerializer, TokenSerializer
+from reviews.models import Category, Genre, Title, Review
+from .serializers import (CreateUserSerializer, UsersSerializer,
+                          TokenSerializer, CommentSerializer, ReviewSerializer)
+
 BAD_CONFIRMATION_CODE = 'Это поле некорректно'
 MAIL_SUBJECT = 'Ваш confirmation code'
+
 
 @api_view(['POST'])
 def create_user(request):
@@ -103,6 +106,7 @@ def admin_get_user(request, username):
         return Response(serializer.data, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 class CategoryViewSet(viewsets.ModelViewSet):
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
@@ -125,3 +129,35 @@ class TitleViewSet(viewsets.ModelViewSet):
     pagination_class = PageNumberPagination
     serializer_class = TitleSerializer
     queryset = Title.objects.all()
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    serializer_class = ReviewSerializer
+    pagination_class = PageNumberPagination
+    # permission_classes
+
+    def perform_create(self, serializer):
+        titles_id = self.kwargs.get('titles_id')
+        titles = get_object_or_404(Title, id=titles_id)
+        serializer.save(author=self.request.user, titles=titles)
+
+    def get_queryset(self):
+        titles_id = self.kwargs.get('titles_id')
+        titles = get_object_or_404(Title, id=titles_id)
+        return titles.reviews.all()
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    serializer_class = CommentSerializer
+    pagination_class = PageNumberPagination
+    # permission_classes = (AllowAny,)
+
+    def perform_create(self, serializer):
+        review_id = self.kwargs.get('review_id')
+        review = get_object_or_404(Review, id=review_id)
+        serializer.save(author=self.request.user, review=review)
+
+    def get_queryset(self):
+        review_id = self.kwargs.get('review_id')
+        review = get_object_or_404(Review, id=review_id)
+        return review.comments.all()
