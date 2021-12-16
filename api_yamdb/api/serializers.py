@@ -25,3 +25,25 @@ class UserFullSerializer(UserSerializer):
         model = User
         fields = ('username', 'email', 'first_name',
                   'last_name', 'bio', 'role')
+
+
+class CategorySerializer(serializers.ModelSerializer):
+
+    #class Meta:
+    #   model = Category
+    #   fields = ('name', 'slug')
+    pass
+
+
+class GenreSerializer(serializers.ModelSerializer):
+
+    #class Meta:
+    #   model = Genre
+    #   fields = ('name', 'slug')
+
+    pass
+
+
+class TitleSerializer(serializers.ModelSerializer):
+
+    pass

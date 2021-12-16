@@ -2,7 +2,7 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import serializers, status
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
@@ -14,6 +14,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from users.models import User
 from .permissions import IsAdmin
 from .serializers import UserSerializer, UserFullSerializer
+#from .serializers import CategorySerializer, GenreSerializer, TitleSerializer
 
 
 @api_view(['POST'])
@@ -72,3 +73,25 @@ def admin_get_user(request, username):
         return Response(status=status.HTTP_204_NO_CONTENT)
     serializer = UserFullSerializer(user)
     return Response(serializer.data)
+
+
+class CategoryViewSet(viewsets.ModelViewSet):
+    #filter_backends = (filters.SearchFilter,)
+    #search_fields = ('name',)
+    #pagination_class = LimitOffsetPagination
+    #serializer_class = CategorySerializer
+    #queryset = Category.objects.all()
+    pass
+
+class GenreViewSet(viewsets.ModelViewSet):
+    #filter_backends = (filters.SearchFilter,)
+    #search_fields = ('name',)
+    #pagination_class = LimitOffsetPagination
+    #serializer_class = GenreSerializer
+    #queryset = Genre.objects.all()
+    pass
+
+class TitleViewSet(viewsets.ModelViewSet):
+    #serializer_class = TitleSerializer
+    #queryset = Title.objects.all()
+    pass
