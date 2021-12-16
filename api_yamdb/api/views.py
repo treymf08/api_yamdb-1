@@ -4,6 +4,8 @@ from django.core.mail import EmailMessage
 from django.shortcuts import get_object_or_404
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework import serializers, status
+from rest_framework import viewsets, filters
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
@@ -11,13 +13,12 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from users.models import User
 from .permissions import IsAdmin
-from .serializers import (CreateUserSerializer, UsersSerializer,
-                          TokenSerializer, ReviewSerializer, CommentSerializer)
-from reviews.models import Title, Review
 
+from .serializers import CategorySerializer, GenreSerializer, TitleSerializer
+from reviews.models import Category, Genre, Title
+from .serializers import CreateUserSerializer, UsersSerializer, TokenSerializer
 BAD_CONFIRMATION_CODE = 'Это поле некорректно'
 MAIL_SUBJECT = 'Ваш confirmation code'
-
 
 @api_view(['POST'])
 def create_user(request):
@@ -102,34 +103,25 @@ def admin_get_user(request, username):
         return Response(serializer.data, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-class ReviewViewSet(viewsets.ModelViewSet):
-    serializer_class = ReviewSerializer
+class CategoryViewSet(viewsets.ModelViewSet):
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
     pagination_class = PageNumberPagination
-    # permission_classes
-
-    def perform_create(self, serializer):
-        titles_id = self.kwargs.get('titles_id')
-        titles = get_object_or_404(Title, id=titles_id)
-        serializer.save(author=self.request.user, titles=titles)
-
-    def get_queryset(self):
-        titles_id = self.kwargs.get('titles_id')
-        titles = get_object_or_404(Title, id=titles_id)
-        return titles.reviews.all()
+    serializer_class = CategorySerializer
+    queryset = Category.objects.all()
 
 
-class CommentViewSet(viewsets.ModelViewSet):
-    serializer_class = CommentSerializer
+class GenreViewSet(viewsets.ModelViewSet):
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
     pagination_class = PageNumberPagination
-    # permission_classes = (AllowAny,)
+    serializer_class = GenreSerializer
+    queryset = Genre.objects.all()
 
-    def perform_create(self, serializer):
-        review_id = self.kwargs.get('review_id')
-        review = get_object_or_404(Review, id=review_id)
-        serializer.save(author=self.request.user, review=review)
 
-    def get_queryset(self):
-        review_id = self.kwargs.get('review_id')
-        review = get_object_or_404(Review, id=review_id)
-        return review.comments.all()
+class TitleViewSet(viewsets.ModelViewSet):
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('category', 'genre', 'name', 'year')
+    pagination_class = PageNumberPagination
+    serializer_class = TitleSerializer
+    queryset = Title.objects.all()

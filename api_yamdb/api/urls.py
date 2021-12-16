@@ -3,11 +3,15 @@ from django.urls import include, path
 from rest_framework import routers
 
 
+from .views import CategoryViewSet, GenreViewSet, TitleViewSet
 from .views import (create_user, myself, admin_get_user, create_token,
                     UserViewSet, ReviewViewSet, CommentViewSet)
 
 router = routers.DefaultRouter()
 router.register('users', UserViewSet)
+router.register('categories', CategoryViewSet)
+router.register('genres', GenreViewSet)
+router.register('titles', TitleViewSet)
 router.register(r'titles/(?P<title_id>\d+)/reviews',
                 ReviewViewSet, basename='reviews')
 router.register(

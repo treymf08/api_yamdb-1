@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
 from users.models import User
-from reviews.models import Comment, Review
+from reviews.models import Category, Genre, Title, Comment, Review
 
 CHANGE_USERNAME = 'Нельзя создать пользователя с username = "me"'
 
@@ -23,6 +23,29 @@ class UsersSerializer(CreateUserSerializer):
         model = User
         fields = ('username', 'email', 'first_name',
                   'last_name', 'bio', 'role')
+
+
+class CategorySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Category
+        fields = ('name', 'slug')
+
+
+class GenreSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Genre
+        fields = ('name', 'slug')
+
+
+class TitleSerializer(serializers.ModelSerializer):
+    category = serializers.StringRelatedField(read_only=True)
+    genre = GenreSerializer(read_only=True, many=True)
+
+    class Meta:
+        model = Title
+        fields = ('id', 'rating', 'name', 'year', 'description', 'genre', 'category')
 
 
 class TokenSerializer(serializers.Serializer):
