@@ -10,3 +10,6 @@ class User(AbstractUser):
     bio = models.TextField('Биография', blank=True,)
     role = models.CharField('Роль', max_length=50,
                             choices=ROLES, default='user')
+
+    class Meta:
+        ordering = ['id']

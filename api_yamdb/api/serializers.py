@@ -61,15 +61,15 @@ class ReviewSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        exclude = ('titles',)
+        exclude = ('title',)
         model = Review
 
-        validators = [
-            UniqueTogetherValidator(
-                queryset=Review.objects.all(),
-                fields=('author', 'titles')
-            )
-        ]
+        # validators = [
+        #     UniqueTogetherValidator(
+        #         queryset=Review.objects.all(),
+        #         fields=('author', 'titles')
+        #     )
+        # ]
 
 
 class CommentSerializer(serializers.ModelSerializer):
