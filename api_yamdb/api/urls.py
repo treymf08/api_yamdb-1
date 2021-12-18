@@ -1,16 +1,14 @@
-
 from django.urls import include, path
 from rest_framework import routers
 
-
-from .views import CategoryViewSet, GenreViewSet, TitleViewSet
-from .views import (create_user, myself, admin_get_user, create_token,
-                    UserViewSet, ReviewViewSet, CommentViewSet)
+from .views import (
+    create_token, create_user, myself, CategoryViewSet, CommentViewSet,
+    GenreViewSet, ReviewViewSet, TitleViewSet, UserViewSet)
 
 router = routers.DefaultRouter()
-router.register('users', UserViewSet)
-router.register('categories', CategoryViewSet)
-router.register('genres', GenreViewSet)
+router.register('users', UserViewSet, basename='users')
+router.register('categories', CategoryViewSet, basename='categories')
+router.register('genres', GenreViewSet, basename='genres')
 router.register('titles', TitleViewSet)
 router.register(r'titles/(?P<title_id>\d+)/reviews',
                 ReviewViewSet, basename='reviews')
@@ -21,7 +19,6 @@ router.register(
 
 urlpatterns = [
     path('v1/users/me/', myself),
-    path('v1/users/<str:username>/', admin_get_user),
     path('v1/', include(router.urls)),
     path('v1/auth/signup/', create_user),
     path('v1/auth/token/', create_token),

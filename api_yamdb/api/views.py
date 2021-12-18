@@ -3,20 +3,20 @@ from django.contrib.auth.base_user import BaseUserManager
 from django.core.mail import EmailMessage
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
-from rest_framework import mixins, status, viewsets
+from rest_framework import filters, mixins, serializers, status, viewsets
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework import viewsets, filters, serializers
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from reviews.models import Category, Genre, Review, Title
 from users.models import User
-from .permissions import IsAdmin, IsAdminOrReadOnly, CommentReviewPermission
-from .serializers import CategorySerializer, GenreSerializer, TitleSerializer
-from reviews.models import Category, Genre, Title, Review
-from .serializers import (CreateUserSerializer, UsersSerializer,
-                          TokenSerializer, CommentSerializer, ReviewSerializer)
+from .permissions import CommentReviewPermission, IsAdmin, IsAdminOrReadOnly
+from .serializers import (
+    CategorySerializer, CommentSerializer, CreateUserSerializer,
+    GenreSerializer, ReviewSerializer, UsersSerializer, TitleSerializer,
+    TokenSerializer)
 
 BAD_CONFIRMATION_CODE = 'Это поле некорректно'
 MAIL_SUBJECT = 'Ваш confirmation code'
@@ -61,13 +61,13 @@ def create_token(request):
     return Response(data, status=status.HTTP_400_BAD_REQUEST)
 
 
-class UserViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
-                  viewsets.GenericViewSet):
-    """ViewSet для создания нового или получения списка пользователей."""
+class UserViewSet(viewsets.ModelViewSet):
+    """ViewSet для модели User."""
     queryset = User.objects.all()
     serializer_class = UsersSerializer
     permission_classes = [IsAdmin]
     pagination_class = PageNumberPagination
+    lookup_field = 'username'
 
 
 @api_view(['GET', 'PATCH'])
@@ -88,40 +88,32 @@ def myself(request):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-@api_view(['GET', 'PATCH', 'DELETE'])
-@permission_classes([IsAdmin])
-def admin_get_user(request, username):
-    """Позволяет администратору получить, изменить или удалить пользователя."""
-    user = get_object_or_404(User, username=username)
-    if request.method == 'GET':
-        serializer = UsersSerializer(user)
-        return Response(serializer.data)
-    if request.method == 'DELETE':
-        user.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-    serializer = UsersSerializer(user, data=request.data, partial=True)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class CreateListDestroy(mixins.CreateModelMixin, mixins.ListModelMixin,
+                        mixins.DestroyModelMixin, viewsets.GenericViewSet):
+    """Класс для получения списка объектов, создания или удаления объекта."""
+    pass
 
 
-class CategoryViewSet(viewsets.ModelViewSet):
+class CategoryViewSet(CreateListDestroy):
+    """ViewSet для модели Category."""
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     pagination_class = PageNumberPagination
     serializer_class = CategorySerializer
     queryset = Category.objects.all()
     permission_classes = [IsAdminOrReadOnly]
+    lookup_field = 'slug'
 
 
-class GenreViewSet(viewsets.ModelViewSet):
+class GenreViewSet(CreateListDestroy):
+    """ViewSet для модели Genre."""
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     pagination_class = PageNumberPagination
     serializer_class = GenreSerializer
     queryset = Genre.objects.all()
     permission_classes = [IsAdminOrReadOnly]
+    lookup_field = 'slug'
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -134,6 +126,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
+    """ViewSet для модели Review."""
     serializer_class = ReviewSerializer
     pagination_class = PageNumberPagination
     permission_classes = [CommentReviewPermission]
@@ -173,6 +166,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
+    """ViewSet для модели Comment."""
     serializer_class = CommentSerializer
     pagination_class = PageNumberPagination
     permission_classes = [CommentReviewPermission]
