@@ -18,7 +18,7 @@ from .permissions import CommentReviewPermission, IsAdmin, IsAdminOrReadOnly
 from .serializers import (
     CategorySerializer, CommentSerializer, CreateUserSerializer,
     GenreSerializer, ReviewSerializer, UsersSerializer, TitleSerializer,
-    TokenSerializer, TitlePostSerializer)
+    TokenSerializer)
 
 BAD_CONFIRMATION_CODE = 'Это поле некорректно'
 MAIL_SUBJECT = 'Ваш confirmation code'
@@ -123,6 +123,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
     pagination_class = PageNumberPagination
+    serializer_class = TitleSerializer
     queryset = Title.objects.all()
     permission_classes = [IsAdminOrReadOnly]
 

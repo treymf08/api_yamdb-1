@@ -56,22 +56,6 @@ class TitleSerializer(serializers.ModelSerializer):
         return value
 
 
-class TitlePostSerializer(serializers.ModelSerializer):
-    genre = serializers.SlugRelatedField(
-        queryset=Genre.objects.all(),
-        slug_field='slug',
-        many=True
-    )
-    category = serializers.SlugRelatedField(
-        queryset=Category.objects.all(),
-        slug_field='slug',
-    )
-
-    class Meta:
-        fields = '__all__'
-        model = Title
-
-
 class TokenSerializer(serializers.Serializer):
     username = serializers.CharField()
     confirmation_code = serializers.CharField()
