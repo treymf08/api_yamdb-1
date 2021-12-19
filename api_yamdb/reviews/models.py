@@ -31,7 +31,7 @@ class Title(models.Model):
     year = models.IntegerField('Год выпуска')
     rating = models.IntegerField('Рейтинг', default=None, null=True)
     description = models.TextField('Описание', blank=True, null=True)
-    genre = models.ManyToManyField(Genre, through='GenreTitle')
+    genre = models.ManyToManyField(Genre, related_name='titles', null=True)
     category = models.ForeignKey(
         Category, on_delete=models.SET_NULL, related_name='titles', null=True)
 
@@ -40,17 +40,6 @@ class Title(models.Model):
 
     def __str__(self):
         return self.name
-
-
-class GenreTitle(models.Model):
-    genre = models.ForeignKey(Genre, on_delete=models.CASCADE)
-    title = models.ForeignKey(Title, on_delete=models.CASCADE)
-
-    class Meta:
-        ordering = ['id']
-
-    def __str__(self):
-        return f'{self.genre} {self.title}'
 
 
 class Review(models.Model):
