@@ -1,9 +1,11 @@
 from rest_framework import serializers
+import datetime as dt
 
 from users.models import User
 from reviews.models import Category, Comment, Genre, Review, Title
 
 CHANGE_USERNAME = 'Нельзя создать пользователя с username = "me"'
+CHECK_YEAR = 'Проверьте год выпуска произведения'
 
 
 class CreateUserSerializer(serializers.ModelSerializer):
@@ -40,12 +42,18 @@ class GenreSerializer(serializers.ModelSerializer):
 
 class TitleSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
-    genre = GenreSerializer(read_only=True, many=True)
+    genre = GenreSerializer(many=True, read_only=True)
 
     class Meta:
         model = Title
         fields = ('id', 'rating', 'name',
                   'year', 'description', 'genre', 'category')
+
+    def validate_year(self, value):
+        year = dt.date.today().year
+        if year < value:
+            raise serializers.ValidationError(CHECK_YEAR)
+        return value
 
 
 class TitlePostSerializer(serializers.ModelSerializer):

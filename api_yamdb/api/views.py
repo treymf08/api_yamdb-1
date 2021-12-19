@@ -9,9 +9,11 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
+from django_filters.rest_framework import DjangoFilterBackend
 
 from reviews.models import Category, Genre, Review, Title
 from users.models import User
+from .filters import TitleFilter
 from .permissions import CommentReviewPermission, IsAdmin, IsAdminOrReadOnly
 from .serializers import (
     CategorySerializer, CommentSerializer, CreateUserSerializer,
@@ -117,16 +119,28 @@ class GenreViewSet(CreateListDestroy):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ('category', 'genre', 'name', 'year')
+    """ViewSet для модели Title."""
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = TitleFilter
     pagination_class = PageNumberPagination
     queryset = Title.objects.all()
     permission_classes = [IsAdminOrReadOnly]
 
-    def get_serializer_class(self):
-        if self.action in ['list', 'retrieve']:
-            return TitleSerializer
-        return TitlePostSerializer
+    def get_category_genres(self, serializer):
+        category_slug = serializer.initial_data.get('category')
+        category = get_object_or_404(Category, slug=category_slug)
+        genre_slugs = serializer.initial_data.getlist('genre')
+        genres = []
+        for slug in genre_slugs:
+            genre = get_object_or_404(Genre, slug=slug)
+            genres.append(genre)
+        serializer.save(category=category, genre=genres)
+
+    def perform_create(self, serializer):
+        self.get_category_genres(serializer)
+
+    def perform_update(self, serializer):
+        self.get_category_genres(serializer)
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -175,12 +189,14 @@ class CommentViewSet(viewsets.ModelViewSet):
     pagination_class = PageNumberPagination
     permission_classes = [CommentReviewPermission]
 
-    def perform_create(self, serializer):
+    def get_review(self):
         review_id = self.kwargs.get('review_id')
-        review = get_object_or_404(Review, id=review_id)
+        return get_object_or_404(Review, id=review_id)
+
+    def perform_create(self, serializer):
+        review = self.get_review()
         serializer.save(author=self.request.user, review=review)
 
     def get_queryset(self):
-        review_id = self.kwargs.get('review_id')
-        review = get_object_or_404(Review, id=review_id)
+        review = self.get_review()
         return review.comments.all()
