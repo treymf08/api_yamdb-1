@@ -16,7 +16,7 @@ from .permissions import CommentReviewPermission, IsAdmin, IsAdminOrReadOnly
 from .serializers import (
     CategorySerializer, CommentSerializer, CreateUserSerializer,
     GenreSerializer, ReviewSerializer, UsersSerializer, TitleSerializer,
-    TokenSerializer)
+    TokenSerializer, TitlePostSerializer)
 
 BAD_CONFIRMATION_CODE = 'Это поле некорректно'
 MAIL_SUBJECT = 'Ваш confirmation code'
@@ -120,9 +120,13 @@ class TitleViewSet(viewsets.ModelViewSet):
     filter_backends = (filters.SearchFilter,)
     search_fields = ('category', 'genre', 'name', 'year')
     pagination_class = PageNumberPagination
-    serializer_class = TitleSerializer
     queryset = Title.objects.all()
     permission_classes = [IsAdminOrReadOnly]
+
+    def get_serializer_class(self):
+        if self.action in ['list', 'retrieve']:
+            return TitleSerializer
+        return TitlePostSerializer
 
 
 class ReviewViewSet(viewsets.ModelViewSet):

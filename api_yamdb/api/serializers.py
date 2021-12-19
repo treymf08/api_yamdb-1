@@ -39,13 +39,29 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class TitleSerializer(serializers.ModelSerializer):
-    category = serializers.StringRelatedField(read_only=True)
+    category = CategorySerializer(read_only=True)
     genre = GenreSerializer(read_only=True, many=True)
 
     class Meta:
         model = Title
         fields = ('id', 'rating', 'name',
                   'year', 'description', 'genre', 'category')
+
+
+class TitlePostSerializer(serializers.ModelSerializer):
+    genre = serializers.SlugRelatedField(
+        queryset=Genre.objects.all(),
+        slug_field='slug',
+        many=True
+    )
+    category = serializers.SlugRelatedField(
+        queryset=Category.objects.all(),
+        slug_field='slug',
+    )
+
+    class Meta:
+        fields = '__all__'
+        model = Title
 
 
 class TokenSerializer(serializers.Serializer):
