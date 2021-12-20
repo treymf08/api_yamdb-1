@@ -1,6 +1,7 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
+from reviews.validators import validate_year
 from users.models import User
 
 
@@ -10,6 +11,8 @@ class Category(models.Model):
 
     class Meta:
         ordering = ['id']
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
 
     def __str__(self):
         return self.name
@@ -21,6 +24,8 @@ class Genre(models.Model):
 
     class Meta:
         ordering = ['id']
+        verbose_name = 'Жанр'
+        verbose_name_plural = 'Жанры'
 
     def __str__(self):
         return self.name
@@ -28,7 +33,7 @@ class Genre(models.Model):
 
 class Title(models.Model):
     name = models.CharField('Название', max_length=256)
-    year = models.IntegerField('Год выпуска')
+    year = models.IntegerField('Год выпуска', validators=[validate_year])
     rating = models.IntegerField('Рейтинг', default=None, null=True)
     description = models.TextField('Описание', blank=True, null=True)
     genre = models.ManyToManyField(Genre, related_name='titles', null=True)
@@ -37,6 +42,8 @@ class Title(models.Model):
 
     class Meta:
         ordering = ['id']
+        verbose_name = 'Произведение'
+        verbose_name_plural = 'Произведения'
 
     def __str__(self):
         return self.name
@@ -54,6 +61,8 @@ class Review(models.Model):
 
     class Meta:
         ordering = ['id']
+        verbose_name = 'Отзыв'
+        verbose_name_plural = 'Отзывы'
         constraints = [
             models.UniqueConstraint(
                 fields=['title', 'author'], name='unique_titles_author')
@@ -73,6 +82,8 @@ class Comment(models.Model):
 
     class Meta:
         ordering = ['id']
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
 
     def __str__(self):
         return self.text[:15]

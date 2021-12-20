@@ -2,7 +2,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.contrib.auth.base_user import BaseUserManager
 from django.core.mail import EmailMessage
 from django.db.models import Avg
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_list_or_404, get_object_or_404
 from rest_framework import filters, mixins, serializers, status, viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
@@ -12,7 +12,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django_filters.rest_framework import DjangoFilterBackend
 
 from reviews.models import Category, Genre, Review, Title
-from users.models import User
+from users.models import User, UserRole
 from .filters import TitleFilter
 from .permissions import CommentReviewPermission, IsAdmin, IsAdminOrReadOnly
 from .serializers import (
@@ -83,7 +83,7 @@ def myself(request):
     serializer = UsersSerializer(user, data=request.data, partial=True)
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    if user.role != 'admin':
+    if user.role != UserRole.ADMIN.value:
         serializer.save(role=user.role)
     else:
         serializer.save()
@@ -124,17 +124,24 @@ class TitleViewSet(viewsets.ModelViewSet):
     filterset_class = TitleFilter
     pagination_class = PageNumberPagination
     serializer_class = TitleSerializer
-    queryset = Title.objects.all()
     permission_classes = [IsAdminOrReadOnly]
+
+    def get_queryset(self):
+        titles = Title.objects.all()
+        for title in titles:
+            reviews = title.reviews.all()
+            if reviews:
+                average = reviews.aggregate(Avg('score'))
+                title.rating = int(average['score__avg'])
+                title.save()
 
     def get_category_genres(self, serializer):
         category_slug = serializer.initial_data.get('category')
         category = get_object_or_404(Category, slug=category_slug)
         genre_slugs = serializer.initial_data.getlist('genre')
         genres = []
-        for slug in genre_slugs:
-            genre = get_object_or_404(Genre, slug=slug)
-            genres.append(genre)
+        if genre_slugs:
+            genres.extend(get_list_or_404(Genre, slug__in=genre_slugs))
         serializer.save(category=category, genre=genres)
 
     def perform_create(self, serializer):
@@ -150,26 +157,10 @@ class ReviewViewSet(viewsets.ModelViewSet):
     pagination_class = PageNumberPagination
     permission_classes = [CommentReviewPermission]
 
-    def update_rating(self, title):
-        reviews = title.reviews.all()
-        sums = reviews.aggregate(Avg("score"))
-        title.rating = int(sums['score__avg'])
-        title.save()
-
     def get_title(self):
         title_id = self.kwargs.get('title_id')
         title = get_object_or_404(Title, id=title_id)
         return title
-
-    def perform_update(self, serializer):
-        title = self.get_title()
-        serializer.save()
-        self.update_rating(title)
-
-    def perform_destroy(self, instance):
-        title = self.get_title()
-        instance.delete()
-        self.update_rating(title)
 
     def perform_create(self, serializer):
         title = self.get_title()
@@ -177,7 +168,6 @@ class ReviewViewSet(viewsets.ModelViewSet):
         if Review.objects.filter(author=author, title=title).exists():
             raise serializers.ValidationError()
         serializer.save(author=self.request.user, title=title)
-        self.update_rating(title)
 
     def get_queryset(self):
         title = self.get_title()
