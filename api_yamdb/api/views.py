@@ -139,10 +139,11 @@ class TitleViewSet(viewsets.ModelViewSet):
         category_slug = serializer.initial_data.get('category')
         category = get_object_or_404(Category, slug=category_slug)
         genre_slugs = serializer.initial_data.getlist('genre')
-        genres = []
         if genre_slugs:
-            genres.extend(get_list_or_404(Genre, slug__in=genre_slugs))
-        serializer.save(category=category, genre=genres)
+            genres = get_list_or_404(Genre, slug__in=genre_slugs)
+            serializer.save(category=category, genre=genres)
+        else:
+            serializer.save(category=category)
 
     def perform_create(self, serializer):
         self.get_category_genres(serializer)
