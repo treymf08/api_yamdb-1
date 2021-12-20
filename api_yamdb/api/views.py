@@ -22,6 +22,7 @@ from .serializers import (
 
 BAD_CONFIRMATION_CODE = 'Это поле некорректно'
 MAIL_SUBJECT = 'Ваш confirmation code'
+REVIEW_EXISTS = 'Вы уже писали отзыв на это произведение'
 
 
 @api_view(['POST'])
@@ -167,7 +168,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
         title = self.get_title()
         author = self.request.user
         if Review.objects.filter(author=author, title=title).exists():
-            raise serializers.ValidationError()
+            raise serializers.ValidationError(REVIEW_EXISTS)
         serializer.save(author=self.request.user, title=title)
 
     def get_queryset(self):
