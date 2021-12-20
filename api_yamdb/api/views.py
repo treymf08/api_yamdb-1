@@ -126,15 +126,8 @@ class TitleViewSet(viewsets.ModelViewSet):
     pagination_class = PageNumberPagination
     serializer_class = TitleSerializer
     permission_classes = [IsAdminOrReadOnly]
-
-    def get_queryset(self):
-        titles = Title.objects.all()
-        for title in titles:
-            reviews = title.reviews.all()
-            if reviews:
-                average = reviews.aggregate(Avg('score'))
-                title.rating = int(average['score__avg'])
-                title.save()
+    queryset = Title.objects.all().annotate(
+        rating=Avg('reviews__score')).order_by('id')
 
     def get_category_genres(self, serializer):
         category_slug = serializer.initial_data.get('category')
